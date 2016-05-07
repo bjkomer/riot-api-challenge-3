@@ -1,0 +1,83 @@
+<html>
+  <title>Mastery Match</title>
+  <head>
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/style.css">
+    <link rel="stylesheet" type="text/css" href="static/bootstrap.min.css">
+  </head>
+  <body>
+    <p>Enter your summoner name:</p>
+    <input type="text" id="summoner-name-input" />
+    <button onclick="get_suggestions()">Find Similar Summoners</button>
+    <table class="table table-bordered table-hover hidden">
+      <tr id="header">
+        <td class="sum-list-elem sum-name">Name</td>
+        <td class="sum-list-elem sum-rank">League</td>
+        <td class="sum-list-elem sum-region">Region</td>
+      </tr>
+      <tr id="sum0">
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
+        <td class="sum-list-elem sum-rank">League</td>
+        <td class="sum-list-elem sum-region">Region</td>
+      </tr>
+      <tr id="sum1">
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
+        <td class="sum-list-elem sum-rank">League</td>
+        <td class="sum-list-elem sum-region">Region</td>
+      </tr>
+      <tr id="sum2">
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
+        <td class="sum-list-elem sum-rank">League</td>
+        <td class="sum-list-elem sum-region">Region</td>
+      </tr>
+      <tr id="sum3">
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
+        <td class="sum-list-elem sum-rank">League</td>
+        <td class="sum-list-elem sum-region">Region</td>
+      </tr>
+      <tr id="sum4">
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
+        <td class="sum-list-elem sum-rank">League</td>
+        <td class="sum-list-elem sum-region">Region</td>
+      </tr>
+    </table>
+    <script >
+
+    function get_suggestions() {
+      if ($('#summoner-name-input').val() == ""){
+        //$('.emptySum-text').show();
+        //TODO: put in the empty text stuff
+        console.log("enter your summoner name first!")
+      }else{
+        $.ajax({
+            url: '/suggestions',
+            type: 'POST',
+            dataType: 'text',
+            data: {summoner_name: $('#summoner-name-input').val().replace(/\s/g,'')}
+          })
+          .done(function(json) {
+            json_obj = JSON.parse(json)
+            matches = json_obj.matches;
+
+            //TODO: jquery goes here to do things
+            //TODO: angular might work as well, but likely more difficult
+
+            //add a visible class tag to the top 5 summoners (if not already there)
+            //fill in info (have the html already exist, but just be hidden)
+            $('.table').removeClass('hidden');
+
+            //TODO: possibly put in Lolking links (built with summoner id)
+            for (var i=0;i<5;i++) {
+              $('#sum'+i.toString()+' .sum-name').text(matches[i][0][1]);
+              $('#sum'+i.toString()+' .sum-rank').text(matches[i][0][2]);
+              $('#sum'+i.toString()+' .sum-region').text(matches[i][0][3].toUpperCase());
+              $('#sum'+i.toString()+' .sum-name').attr("href",'http://www.lolking.net/summoner/na/'+matches[i][0][0].toString());
+            }
+          })
+        }
+      }
+
+    </script>
+  </body>
+</html>
