@@ -23,11 +23,14 @@ IMAGE_PREFIX = 'http://ddragon.leagueoflegends.com/cdn/5.22.3/img/champion/' #TO
 region='na'
 region2='na1'
 
-api_key = open('key.txt','r').read().rstrip()
-data = pickle.load(open('na_profiles.p','r'))
-names = pickle.load(open('na_summoners.p', 'r'))
-champs = pickle.load(open('ordered_champs.p', 'r'))
-cid_to_index = pickle.load(open('cid_mapping.p','r'))
+my_dir = os.path.dirname(__file__)
+os.path.join(my_dir, 'key.txt')
+
+api_key = open(os.path.join(my_dir, 'key.txt'),'r').read().rstrip()
+data = pickle.load(open(os.path.join(my_dir, 'na_profiles.p'),'r'))
+names = pickle.load(open(os.path.join(my_dir, 'na_summoners.p'), 'r'))
+champs = pickle.load(open(os.path.join(my_dir, 'ordered_champs.p'), 'r'))
+cid_to_index = pickle.load(open(os.path.join(my_dir, 'cid_mapping.p'),'r'))
 
 @app.route('/')
 def startup():
@@ -36,6 +39,7 @@ def startup():
 @app.route('/suggestions', methods=['POST'])
 def suggestions():
     summoner_name = request.get_data()
+    print(summoner_name)
     summoner_name = summoner_name[14:]
 
     response = retrieve_data(summoner_name)
