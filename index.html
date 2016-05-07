@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="static/bootstrap.min.css">
   </head>
   <body>
+    <p>Enter your summoner name:</p>
     <input type="text" id="summoner-name-input" />
     <button onclick="get_suggestions()">Find Similar Summoners</button>
     <table class="table table-bordered table-hover hidden">
@@ -16,65 +17,31 @@
         <td class="sum-list-elem sum-region">Region</td>
       </tr>
       <tr id="sum0">
-        <td class="sum-list-elem sum-name">Name</td>
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
         <td class="sum-list-elem sum-rank">League</td>
         <td class="sum-list-elem sum-region">Region</td>
       </tr>
       <tr id="sum1">
-        <td class="sum-list-elem sum-name">Name</td>
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
         <td class="sum-list-elem sum-rank">League</td>
         <td class="sum-list-elem sum-region">Region</td>
       </tr>
       <tr id="sum2">
-        <td class="sum-list-elem sum-name">Name</td>
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
         <td class="sum-list-elem sum-rank">League</td>
         <td class="sum-list-elem sum-region">Region</td>
       </tr>
       <tr id="sum3">
-        <td class="sum-list-elem sum-name">Name</td>
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
         <td class="sum-list-elem sum-rank">League</td>
         <td class="sum-list-elem sum-region">Region</td>
       </tr>
       <tr id="sum4">
-        <td class="sum-list-elem sum-name">Name</td>
+        <td class="sum-list-elem"><a class="sum-name" href="#">Name</a></td>
         <td class="sum-list-elem sum-rank">League</td>
         <td class="sum-list-elem sum-region">Region</td>
       </tr>
     </table>
-    <!--
-    <ul class="sum-list">
-      <li id="header">
-        <p class="sum-list-elem sum-name">Name</p>
-        <p class="sum-list-elem sum-rank">League</p>
-        <p class="sum-list-elem sum-region">Region</p>
-      </li>
-      <li id="sum0">
-        <p class="sum-list-elem sum-name">Summoner 1</p>
-        <p class="sum-list-elem sum-rank">Rank</p>
-        <p class="sum-list-elem sum-region">Region</p>
-      </li>
-      <li id="sum1">
-        <p class="sum-list-elem sum-name">Summoner 1</p>
-        <p class="sum-list-elem sum-rank">Rank</p>
-        <p class="sum-list-elem sum-region">Region</p>
-      </li>
-      <li id="sum2">
-        <p class="sum-list-elem sum-name">Summoner 1</p>
-        <p class="sum-list-elem sum-rank">Rank</p>
-        <p class="sum-list-elem sum-region">Region</p>
-      </li>
-      <li id="sum3">
-        <p class="sum-list-elem sum-name">Summoner 1</p>
-        <p class="sum-list-elem sum-rank">Rank</p>
-        <p class="sum-list-elem sum-region">Region</p>
-      </li>
-      <li id="sum4">
-        <p class="sum-list-elem sum-name">Summoner 1</p>
-        <p class="sum-list-elem sum-rank">Rank</p>
-        <p class="sum-list-elem sum-region">Region</p>
-      </li>
-    </ul>
-    -->
     <script >
 
     function get_suggestions() {
@@ -105,6 +72,7 @@
               $('#sum'+i.toString()+' .sum-name').text(matches[i][0][1]);
               $('#sum'+i.toString()+' .sum-rank').text(matches[i][0][2]);
               $('#sum'+i.toString()+' .sum-region').text(matches[i][0][3].toUpperCase());
+              $('#sum'+i.toString()+' .sum-name').attr("href",'http://www.lolking.net/summoner/na/'+matches[i][0][0].toString());
             }
           })
         }
