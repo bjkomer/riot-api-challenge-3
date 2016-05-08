@@ -26,20 +26,14 @@ h2              { font-size: 1.2em; }
 
 .inputs {align:center;}
 
-.plain-text {color:#2363e8}
-
+.plain-text {color:#2363e8;text-align:center;}
+/*
+.plain-text {color:#3333ff}
+*/
 .table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
-  background: red;
+  background: #191919;
 }
 
-.table-hover tbody tr:hover td {
-    background-color: red;
-}
+.sum-region {color:green;}
 
-.table tbody tr:hover td, .table tbody tr:hover th {
-    background-color: red;
-}
-
-.table-hover {
-    background-color: red;
-}
+#header {color:green;font-weight:bold;}

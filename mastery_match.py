@@ -12,26 +12,22 @@ from flask import Flask, request, session, g, redirect, url_for, \
 my_dir = os.path.dirname(__file__)
 os.path.join(my_dir, 'key.txt')
 
-api_key = open(os.path.join(my_dir, 'key.txt'),'r').read().rstrip()
-data = pickle.load(open(os.path.join(my_dir, 'na_combined_profiles.p'),'r'))
-names = pickle.load(open(os.path.join(my_dir, 'na_combined_summoners.p'), 'r'))
-champs = pickle.load(open(os.path.join(my_dir, 'ordered_champs.p'), 'r'))
-cid_to_index = pickle.load(open(os.path.join(my_dir, 'cid_mapping.p'),'r'))
-
-app = Flask(__name__, static_folder=os.path.join(my_dir, 'static'))
-app.config.from_object(__name__)
-
-# trying different methods of doing the match
-match_modes = ['basic', 'weighted', 'weighted2', 'weighted3', 'presquared']
-match_mode = match_modes[3]#match_modes[3]
-
-NUM_CHAMPIONS = 130
-IMAGE_PREFIX = 'http://ddragon.leagueoflegends.com/cdn/5.22.3/img/champion/' #TODO: update path
-
-
-region='na'
-region2='na1'
-
+"""
+get_region_code = {'BR':('br','BR1'),
+                   'EUNE':('eune','EUN1'),
+                   'EUW':('euw','EUW1'),
+                   'JP':('jp','JP1'),
+                   'KR':('kr','KR'),
+                   'LAN':('lan','LA1'),
+                   'LAS':('las','LA2'),
+                   'NA':('na','NA1'),
+                   'OCE':('oce','OC1'),
+                   'RU':('ru','RU'),
+                   'TR':('tr','TR1'),
+                  }
+"""
+# Use function instead of dict to handle the 'else' case
+# if something somehow goes wrong, default to NA
 def get_region_code(region):
     if region == 'BR':
         return 'br', 'BR1'
@@ -58,6 +54,33 @@ def get_region_code(region):
     else:
         return 'na', 'NA1'
 
+regions = ['br','eune','euw','jp','kr','lan','las','na','oce','ru','tr']
+
+api_key = open(os.path.join(my_dir, 'key.txt'),'r').read().rstrip()
+#data = pickle.load(open(os.path.join(my_dir, 'na_combined_profiles.p'),'r'))
+#names = pickle.load(open(os.path.join(my_dir, 'na_combined_summoners.p'), 'r'))
+champs = pickle.load(open(os.path.join(my_dir, 'ordered_champs.p'), 'r'))
+cid_to_index = pickle.load(open(os.path.join(my_dir, 'cid_mapping.p'),'r'))
+
+data = {}
+names = {}
+# load regional data
+for region in regions:
+    if region == 'na':
+        data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_profiles.p'),'r'))
+        names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_summoners.p'),'r'))
+    else:
+        data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_profiles.p'),'r'))
+        names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_summoners.p'),'r'))
+
+app = Flask(__name__, static_folder=os.path.join(my_dir, 'static'))
+app.config.from_object(__name__)
+
+# trying different methods of doing the match
+match_modes = ['basic', 'weighted', 'weighted2', 'weighted3', 'presquared']
+match_mode = match_modes[3]
+
+NUM_CHAMPIONS = 130
 
 @app.route('/')
 def startup():
@@ -83,12 +106,14 @@ def suggestions():
 def retrieve_data(sum_name, region='na', region2='na1'):
 
     clean_sum_name = sum_name.replace(" ", "").lower()
+
     try:
         # Get Summoner ID
         sum_id_query = "https://{0}.api.pvp.net/api/lol/{0}/v1.4/summoner/by-name/{1}?api_key={2}".format(region, clean_sum_name, api_key)
         
         f = urllib2.urlopen(sum_id_query)
         j = json.loads(f.read())
+
         sum_id = int(j[clean_sum_name]['id'])
 
         # Get Mastery Data
@@ -114,28 +139,30 @@ def retrieve_data(sum_name, region='na', region2='na1'):
 
         # Do matching
         if match_mode == 'basic':
-            result = np.linalg.norm(data - user_data, axis=1)
+            result = np.linalg.norm(data[region] - user_data, axis=1)
         elif match_mode == 'weighted':
-            result = np.linalg.norm(np.multiply(data - user_data, user_data), axis=1)
+            result = np.linalg.norm(np.multiply(data[region] - user_data, user_data), axis=1)
         elif match_mode == 'weighted2':
-            result = np.linalg.norm(np.multiply(data - user_data, np.multiply(user_data, user_data)), axis=1)
+            result = np.linalg.norm(np.multiply(data[region] - user_data, np.multiply(user_data, user_data)), axis=1)
         elif match_mode == 'weighted3':
-            result = np.linalg.norm(np.multiply(data - user_data, np.multiply(np.multiply(user_data, user_data), user_data)), axis=1)
+            result = np.linalg.norm(np.multiply(data[region] - user_data, np.multiply(np.multiply(user_data, user_data), user_data)), axis=1)
         elif match_mode == 'presquared':
-            result = np.linalg.norm(data - user_data, axis=1)
+            result = np.linalg.norm(data[region] - user_data, axis=1)
 
         indices = np.argsort(result)
         index = np.argmin(result)
 
+        
         matches = []
         #names : id, name, league, region
         for i in indices[:5]:
-            matches.append([names[i]])
+            matches.append([names[region][i]])
 
         return {'summoner_name':sum_name,
                 'matches': matches,
                 'error':False}
     except:
+        #print "Unexpected error:", sys.exc_info()[0]
         return {'error':True}
 
 if __name__ == '__main__':

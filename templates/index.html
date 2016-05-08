@@ -14,14 +14,14 @@
   </head>
   <body style="background-color:#292929">
     <h1 style="color:#2363e8" class='text-center title'>Mastery Match</h1>
+    <br>
+    <p class='plain-text'>Enter your summoner name:</p>
     <div class='inputs col-md-10  col-md-offset-4' >
-      <p class='plain-text'>Enter your summoner name:</p>
       <div class="col-xs-2">
         <input type="text" class="form-control" id="summoner-name-input" />
       </div>
       <div class="btn-group">
-        <button class="btn btn-primary dropdown-toggle" type="button" id="region_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">NA<!--<span class="caret"></span>-->
-        </button>
+        <button class="btn btn-primary dropdown-toggle" type="button" id="region_dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">NA</button>
         <ul class="dropdown-menu">
           <li><a href="#">BR</a></li>
           <li><a href="#">EUNE</a></li>
@@ -38,7 +38,9 @@
       </div>
       <button class="btn btn-primary" onclick="get_suggestions()">Find Similar Summoners</button>
     </div>
+    <br>
     <p class="hidden error-text plain-text">Summoner cannot be found for the specified region</p>
+    <p class="hidden no-name-text plain-text">Please enter a summoner name!</p>
     <table class="table table-bordered table-hover hidden">
       <thead>
         <tr id="header">
@@ -87,9 +89,9 @@
 
     function get_suggestions() {
       if ($('#summoner-name-input').val() == ""){
-        //$('.emptySum-text').show();
-        //TODO: put in the empty text stuff
-        console.log("enter your summoner name first!")
+        $('.table').addClass('hidden');
+        $('.error-text').addClass('hidden');
+        $('.no-name-text').removeClass('hidden');
       }else{
         $.ajax({
             url: '/suggestions',
@@ -105,6 +107,7 @@
             if (error == true) {
               $('.table').addClass('hidden');
               $('.error-text').removeClass('hidden');
+              $('.no-name-text').addClass('hidden');
             } else {
               matches = json_obj.matches;
 
@@ -113,8 +116,9 @@
 
               //add a visible class tag to the top 5 summoners (if not already there)
               //fill in info (have the html already exist, but just be hidden)
-              $('.error-text').addClass('hidden');
               $('.table').removeClass('hidden');
+              $('.error-text').addClass('hidden');
+              $('.no-name-text').addClass('hidden');
 
               for (var i=0;i<5;i++) {
                 $('#sum'+i.toString()+' .sum-name').text(matches[i][0][1]);
