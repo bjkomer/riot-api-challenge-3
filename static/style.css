@@ -1,4 +1,4 @@
-body            { font-family: sans-serif; background: #eee; }
+body            { font-family: sans-serif; background-color: #eee; }
 a, h1, h2       { color: #377ba8; }
 h1, h2          { font-family: 'Georgia', serif; margin: 0; }
 h1              { border-bottom: 2px solid #eee; }
@@ -22,4 +22,24 @@ h2              { font-size: 1.2em; }
 
 .sum-name {width:150px;display: inline-block; }
 .sum-rank {width:50px;display: inline-block; }
-.sum-region {width:50px;display: inline-block; }
+.sum-region {width:50px;display: inline-block; text-align:center;}
+
+.inputs {align:center;}
+
+.plain-text {color:#2363e8}
+
+.table-hover tbody tr:hover td, .table-hover tbody tr:hover th {
+  background: red;
+}
+
+.table-hover tbody tr:hover td {
+    background-color: red;
+}
+
+.table tbody tr:hover td, .table tbody tr:hover th {
+    background-color: red;
+}
+
+.table-hover {
+    background-color: red;
+}

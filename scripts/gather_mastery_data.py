@@ -8,6 +8,10 @@ import json
 import urllib2
 import time
 
+# Open an IPython session if an exception is found
+from IPython.core import ultratb
+sys.excepthook = ultratb.FormattedTB(mode='Verbose', color_scheme='Linux', call_pdb=1)
+
 NUM_CHAMPIONS = 130
 #NUM_SUMMONERS = 1000
 
@@ -15,7 +19,8 @@ region = 'na'
 region2 = 'na1'
 api_key = open('key.txt','r').read().rstrip()
 
-names = pickle.load(open(region+'_summoners.p', 'r'))
+#names = pickle.load(open(region+'_summoners.p', 'r'))
+names = pickle.load(open(region+'_diamond_summoners.p', 'r'))
 cid_to_index = pickle.load(open('cid_mapping.p','r'))
 
 def get_mastery_data(sid):
@@ -34,9 +39,16 @@ def get_mastery_data(sid):
 data = np.zeros((len(names), NUM_CHAMPIONS))
 print(len(names))
 for i, name in enumerate(names):
-    profile = get_mastery_data(name[0])
-    data[i,:] = profile
-    print(i)
-    time.sleep(1.5)
+    try:
+        profile = get_mastery_data(name[0])
+        data[i,:] = profile
+        print(i)
+        time.sleep(1.6)
+    except:
+        print("an error occurred")
+        pickle.dump(data, open(region+'_'+str(i)+'_diamond_profiles.p','w'))
+        sys.exit()
 
-pickle.dump(data, open(region+'_profiles.p','w'))
+
+#pickle.dump(data, open(region+'_profiles.p','w'))
+pickle.dump(data, open(region+'_diamond_profiles.p','w'))
