@@ -5,6 +5,7 @@ import numpy as np
 import cPickle as pickle
 import os.path
 import urllib2
+from copy import deepcopy
 
 from flask import Flask, request, session, g, redirect, url_for, \
         abort, render_template, flash, jsonify
@@ -66,7 +67,7 @@ data = {}
 names = {}
 # load regional data
 for region in regions:
-    if region == 'na':
+    if region == 'naaaaaa':
         data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_profiles.p'),'r'))
         names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_summoners.p'),'r'))
     else:
@@ -77,8 +78,8 @@ app = Flask(__name__, static_folder=os.path.join(my_dir, 'static'))
 app.config.from_object(__name__)
 
 # trying different methods of doing the match
-match_modes = ['basic', 'weighted', 'weighted2', 'weighted3', 'presquared']
-match_mode = match_modes[3]
+match_modes = ['basic', 'weighted', 'weighted2', 'weighted3', 'top10', 'top1', 'complex', 'top5match','multiply']
+match_mode =  'complex'
 
 NUM_CHAMPIONS = 130
 
@@ -107,7 +108,8 @@ def retrieve_data(sum_name, region='na', region2='na1'):
 
     clean_sum_name = sum_name.replace(" ", "").lower()
 
-    try:
+    #try:
+    if True:
         # Get Summoner ID
         sum_id_query = "https://{0}.api.pvp.net/api/lol/{0}/v1.4/summoner/by-name/{1}?api_key={2}".format(region, clean_sum_name, api_key)
         
@@ -146,12 +148,59 @@ def retrieve_data(sum_name, region='na', region2='na1'):
             result = np.linalg.norm(np.multiply(data[region] - user_data, np.multiply(user_data, user_data)), axis=1)
         elif match_mode == 'weighted3':
             result = np.linalg.norm(np.multiply(data[region] - user_data, np.multiply(np.multiply(user_data, user_data), user_data)), axis=1)
-        elif match_mode == 'presquared':
-            result = np.linalg.norm(data[region] - user_data, axis=1)
+        elif match_mode == 'top10':
+            tmp_data = deepcopy(data[region])
+            tmp_user = deepcopy(user_data)
+            indices = np.argsort(tmp_user)
+            tmp_user[indices[:-5]] = 0
+            tmp_user /= np.sum(tmp_user)
+            for i in range(len(tmp_data)):
+                indices = np.argsort(tmp_data[i])
+                tmp_data[i][indices[:-5]] = 0
+                tmp_data[i] /= np.sum(tmp_data[i])
+            result = np.linalg.norm(tmp_data - tmp_user, axis=1)
+        elif match_mode == 'top1':
+            max_user = np.argmax(user_data)
+            tmp_data = deepcopy(data[region])
+            res_data = np.zeros(len(tmp_data))
+
+            for i in range(len(tmp_data)):
+                max_data = np.argmax(tmp_data[i])
+                if max_data == max_user:
+                    res_data[i] = 0
+                else:
+                    res_data[i] = 1
+            result = res_data
+        elif match_mode == 'top5match':
+            tmp_data = deepcopy(data[region])
+            tmp_user = deepcopy(user_data)
+            indices = np.argsort(tmp_user)
+            tmp_user[:] = 1
+            tmp_user[indices[:-5]] = 0
+            #tmp_user[indices[-5:]] = 1
+            for i in range(len(tmp_data)):
+                indices = np.argsort(tmp_data[i])
+                tmp_data[i][:] = 1
+                tmp_data[i][indices[:-5]] = 0
+                #tmp_data[i][indices[-5:]] = 1
+            result = 0 - np.linalg.norm(np.multiply(tmp_data, tmp_user), axis=1)
+        elif match_mode == 'multiply':
+            result = 0 - np.linalg.norm(np.multiply(data[region], user_data), axis=1)
+            print(result.shape)
+
+        elif match_mode == 'complex':
+            tmp_data = deepcopy(data[region])
+            tmp_user = deepcopy(user_data)
+            indices = np.argsort(tmp_user)
+            tmp_user[indices[:-5]] = 0
+            tmp_user /= np.sum(tmp_user)
+            for i in range(len(tmp_data)):
+                indices = np.argsort(tmp_data[i])
+                tmp_data[i][indices[:-5]] = 0
+                tmp_data[i] /= np.sum(tmp_data[i])
+            result = np.linalg.norm(tmp_data - tmp_user, axis=1)*.2 + np.linalg.norm(data[region] - user_data, axis=1)*.3 - np.linalg.norm(np.multiply(data[region], user_data), axis=1)
 
         indices = np.argsort(result)
-        index = np.argmin(result)
-
         
         matches = []
         #names : id, name, league, region
@@ -161,8 +210,9 @@ def retrieve_data(sum_name, region='na', region2='na1'):
         return {'summoner_name':sum_name,
                 'matches': matches,
                 'error':False}
-    except:
-        #print "Unexpected error:", sys.exc_info()[0]
+    #except:
+    if False:
+        #print ("Unexpected error:", sys.exc_info()[0])
         return {'error':True}
 
 if __name__ == '__main__':
