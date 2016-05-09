@@ -1,6 +1,6 @@
 # Submission for Riot API Challenge 3.0
 
-Check it out [here](https://platicopter.pythonanywhere.com/)
+Check it out [here](https://platicopter.pythonanywhere.com/)! It was designed to look best with Chrome, other browsers will not be ideal (but hopefully still functional).
 
 ## What is it?
 
