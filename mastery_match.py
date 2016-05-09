@@ -56,7 +56,7 @@ def get_region_code(region):
         return 'na', 'NA1'
 
 regions = ['br','eune','euw','jp','kr','lan','las','na','oce','ru','tr']
-diamond_regions = ['br','eune','euw','lan','las','na','oce','ru','tr']
+diamond_regions = ['br','eune','euw','kr','lan','las','na','oce','ru','tr']
 
 api_key = open(os.path.join(my_dir, 'key.txt'),'r').read().rstrip()
 #data = pickle.load(open(os.path.join(my_dir, 'na_combined_profiles.p'),'r'))
