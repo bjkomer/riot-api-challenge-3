@@ -1,15 +1,9 @@
 <html>
   <title>Mastery Match</title>
   <head>
-    <!--<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
-    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="static/bootstrap.min.css">-->
-
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-  
     <link rel="stylesheet" type="text/css" href="static/style.css">
   </head>
   <body style="background-color:#292929">
@@ -114,7 +108,7 @@
             data: {summoner_name: $('#summoner-name-input').val().replace(/\s/g,''),
                    region: $('#region_dropdown').text(),
                    use_all: $("#all input[name=regionradio]").is(':checked'),
-                   diamond: $("#all input[name=diamondradio]").is(':checked')
+                   diamond: $("#yes input[name=diamondradio]").is(':checked')
                   }
           })
           .done(function(json) {
@@ -128,9 +122,6 @@
             } else {
               matches = json_obj.matches;
 
-              //TODO: jquery goes here to do things
-              //TODO: angular might work as well, but likely more difficult
-
               //add a visible class tag to the top 5 summoners (if not already there)
               //fill in info (have the html already exist, but just be hidden)
               $('.table').removeClass('hidden');
@@ -139,10 +130,10 @@
 
               for (var i=0;i<5;i++) {
                 $('#sum'+i.toString()+' .sum-name').text(matches[i][0][1]);
-                //$('#sum'+i.toString()+' .sum-rank').text(matches[i][0][2]);
                 $('#sum'+i.toString()+' .sum-rank').attr("alt", matches[i][0][2]);
                 $('#sum'+i.toString()+' .sum-rank').attr("src", "static/images/"+matches[i][0][2].toLowerCase()+"_tier.png");
                 $('#sum'+i.toString()+' .sum-region').text(matches[i][0][3].toUpperCase());
+                //NOTE: no summoner data exists on lolking for Japan, leaving link for now in case it exists in the future
                 $('#sum'+i.toString()+' .sum-name').attr("href",'http://www.lolking.net/summoner/'+matches[i][0][3]+'/'+matches[i][0][0].toString());
               }
             }

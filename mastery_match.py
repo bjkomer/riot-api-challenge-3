@@ -56,6 +56,7 @@ def get_region_code(region):
         return 'na', 'NA1'
 
 regions = ['br','eune','euw','jp','kr','lan','las','na','oce','ru','tr']
+diamond_regions = ['br','eune','euw','lan','las','na','oce','ru','tr']
 
 api_key = open(os.path.join(my_dir, 'key.txt'),'r').read().rstrip()
 #data = pickle.load(open(os.path.join(my_dir, 'na_combined_profiles.p'),'r'))
@@ -63,8 +64,11 @@ api_key = open(os.path.join(my_dir, 'key.txt'),'r').read().rstrip()
 champs = pickle.load(open(os.path.join(my_dir, 'ordered_champs.p'), 'r'))
 cid_to_index = pickle.load(open(os.path.join(my_dir, 'cid_mapping.p'),'r'))
 
+# very space inefficient and gross loading all the data like this
+# but should be more time efficient and easy to use when running
 data = {}
 data_diamond = {}
+data_diamond_only = {}
 names = {}
 names_diamond = {}
 names_all = []
@@ -77,19 +81,25 @@ for region in regions:
     #else:
     data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_profiles.p'),'r'))
     names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_summoners.p'),'r'))
+    data_diamond[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_profiles.p'),'r'))
+    names_diamond[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_summoners.p'),'r'))
     for n in names[region]:
         names_all.append(n)
         names_diamond_all.append(n)
 
-for region in regions:
-    if region != 'jp': #no data for Japan currently
-        data_diamond[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_diamond_profiles.p'),'r'))
-        names_diamond[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_diamond_summoners.p'),'r'))
-        for n in names_diamond[region]:
-            names_diamond_all.append(n)
+for region in diamond_regions:
+    data_diamond_only[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_diamond_profiles.p'),'r'))
+    data_diamond[region] = np.concatenate([data[region],data_diamond_only[region]])
+    names_diamond_region = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_diamond_summoners.p'),'r'))
+    for n in names_diamond_region:
+        names_diamond[region].append(n)
+        names_diamond_all.append(n)
 
 data_all = np.concatenate([data[r] for r in regions])
-data_diamond_all = np.concatenate([data_all, np.concatenate([data_diamond[r] for r in regions])])
+data_diamond_all = np.concatenate([data_all, np.concatenate([data_diamond_only[r] for r in diamond_regions])])
+
+
+
 #names_all = np.concatenate([names[r] for r in regions])
 
 app = Flask(__name__, static_folder=os.path.join(my_dir, 'static'))
@@ -121,7 +131,7 @@ def suggestions():
     region1, region2 = get_region_code(region)
 
     #TODO: add option to return results from regions other than your own
-    response = retrieve_data(summoner_name, region=region1, region2=region2, use_all=use_all)
+    response = retrieve_data(summoner_name, region=region1, region2=region2, use_all=use_all, diamond=diamond)
 
     return jsonify(response)
 
@@ -162,11 +172,19 @@ def retrieve_data(sum_name, region='na', region2='na1', use_all=False, diamond=F
 
         if use_all:
             # Compare against summoners from all regions
-            sum_data = data_all#np.concatenate([data[r] for r in regions])
-            name_data = names_all#np.concatenate([names[r] for r in regions])
+            if diamond:
+                sum_data = data_diamond_all
+                name_data = names_diamond_all
+            else:
+                sum_data = data_all#np.concatenate([data[r] for r in regions])
+                name_data = names_all#np.concatenate([names[r] for r in regions])
         else:
-            sum_data = data[region]
-            name_data = names[region]
+            if diamond:
+                sum_data = data_diamond[region]
+                name_data = names_diamond[region]
+            else:
+                sum_data = data[region]
+                name_data = names[region]
 
         # Do matching
         if match_mode == 'basic':

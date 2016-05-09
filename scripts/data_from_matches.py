@@ -19,7 +19,7 @@ region = sys.argv[1]
 get_ids = {'br':[482762,522422,2900847,980197,664103,1210455,1519016,7281714,4520622,7764879],
            'eune':[30835511,34619107,34756594,34548067,40504926,47708236,35728787,36321134,56867645],
            'euw':[44747756,73296903,73676986,84039780,21113487,74098038,128202,37873352,47459521],
-           'jp':[],
+           'jp':[], #NOTE: no data exists for Japan on lolking
            'kr':[1393430,7431250,7876711,5205491,5801712],
            'lan':[155469,218300,674816,335585,523369],
            'las':[311190,135921,147196,107671,207319],
@@ -53,9 +53,6 @@ for sum_id in sum_ids:
             time.sleep(1.5)
             success = False
     matches = js['matches']
-
-    #print(matches)
-    
 
     # dictionary of all summoner data to be gathered
     # keys are summoner ID so duplicates overwrite automatically
