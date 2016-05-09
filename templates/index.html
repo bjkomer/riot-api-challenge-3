@@ -39,8 +39,13 @@
       <button class="btn btn-primary" onclick="get_suggestions()">Find Similar Summoners</button>
       <div>
         <p class='match-region-label'>Find matches in:</p>
-        <label class="radio-inline" id="cur"><input type="radio" name="regionradio">Current Region</label>
+        <label class="radio-inline" id="cur"><input type="radio" name="regionradio" checked="checked">Current Region</label>
         <label class="radio-inline" id="all"><input type="radio" name="regionradio">All Regions</label>
+      </div>
+      <div>
+        <p class='match-region-label'>Also include some Diamond players?</p>
+        <label class="radio-inline" id="yes"><input type="radio" name="diamondradio">Yes</label>
+        <label class="radio-inline" id="no"><input type="radio" name="diamondradio" checked="checked">No</label>
       </div>
     </div>
     <br>
@@ -108,8 +113,8 @@
             dataType: 'text',
             data: {summoner_name: $('#summoner-name-input').val().replace(/\s/g,''),
                    region: $('#region_dropdown').text(),
-                   //use_all: $('input[name=regionradio]:checked').val()
-                   use_all: $("#all input[name=regionradio]").is(':checked')
+                   use_all: $("#all input[name=regionradio]").is(':checked'),
+                   diamond: $("#all input[name=diamondradio]").is(':checked')
                   }
           })
           .done(function(json) {

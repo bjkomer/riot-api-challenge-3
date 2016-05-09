@@ -12,7 +12,7 @@ import urllib2
 #region = 'na'
 api_key = open('key.txt','r').read().rstrip()
 
-regions = ['br','eune','eune','euw','jp','kr','lan','las','oce','ru','tr']
+regions = ['br','eune','euw','jp','kr','lan','las','oce','ru','tr']
 
 for region in regions:
 

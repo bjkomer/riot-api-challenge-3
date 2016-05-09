@@ -64,20 +64,32 @@ champs = pickle.load(open(os.path.join(my_dir, 'ordered_champs.p'), 'r'))
 cid_to_index = pickle.load(open(os.path.join(my_dir, 'cid_mapping.p'),'r'))
 
 data = {}
+data_diamond = {}
 names = {}
+names_diamond = {}
 names_all = []
+names_diamond_all = []
 # load regional data
 for region in regions:
-    if region == 'naaaaaa':
-        data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_profiles.p'),'r'))
-        names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_summoners.p'),'r'))
-    else:
-        data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_profiles.p'),'r'))
-        names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_summoners.p'),'r'))
+    #if region == 'naaaaaa':
+    #    data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_profiles.p'),'r'))
+    #    names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_summoners.p'),'r'))
+    #else:
+    data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_profiles.p'),'r'))
+    names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_summoners.p'),'r'))
     for n in names[region]:
         names_all.append(n)
+        names_diamond_all.append(n)
+
+for region in regions:
+    if region != 'jp': #no data for Japan currently
+        data_diamond[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_diamond_profiles.p'),'r'))
+        names_diamond[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_diamond_summoners.p'),'r'))
+        for n in names_diamond[region]:
+            names_diamond_all.append(n)
 
 data_all = np.concatenate([data[r] for r in regions])
+data_diamond_all = np.concatenate([data_all, np.concatenate([data_diamond[r] for r in regions])])
 #names_all = np.concatenate([names[r] for r in regions])
 
 app = Flask(__name__, static_folder=os.path.join(my_dir, 'static'))
@@ -99,11 +111,12 @@ def suggestions():
     #summoner_name = request.get_data()
     data = request.get_data()
 
-    summoner_name, region, use_all = data.split('&')
+    summoner_name, region, use_all, diamond = data.split('&')
 
     summoner_name = summoner_name[14:]
     region = region[7:]
     use_all = use_all[8:] == 'true'
+    diamond = diamond[8:] == 'true'
 
     region1, region2 = get_region_code(region)
 
@@ -113,7 +126,7 @@ def suggestions():
     return jsonify(response)
 
 
-def retrieve_data(sum_name, region='na', region2='na1', use_all=False):
+def retrieve_data(sum_name, region='na', region2='na1', use_all=False, diamond=False):
 
     clean_sum_name = sum_name.replace(" ", "").lower()
 

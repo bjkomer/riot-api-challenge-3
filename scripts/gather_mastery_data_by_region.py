@@ -51,8 +51,8 @@ region = sys.argv[1]
 
 region1, region2 = get_region_code(region)
 
-names = pickle.load(open(region+'_summoners.p', 'r'))
-#names = pickle.load(open(region+'_diamond_summoners.p', 'r'))
+#names = pickle.load(open(region+'_summoners.p', 'r'))
+names = pickle.load(open(region+'_diamond_summoners.p', 'r'))
 cid_to_index = pickle.load(open('cid_mapping.p','r'))
 
 def get_mastery_data(sid):
@@ -88,5 +88,5 @@ for i, name in enumerate(names):
             #sys.exit()
 
 
-pickle.dump(data, open(region+'_profiles.p','w'))
-#pickle.dump(data, open(region+'_diamond_profiles.p','w'))
+#pickle.dump(data, open(region+'_profiles.p','w'))
+pickle.dump(data, open(region+'_diamond_profiles.p','w'))
