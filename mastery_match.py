@@ -65,6 +65,7 @@ cid_to_index = pickle.load(open(os.path.join(my_dir, 'cid_mapping.p'),'r'))
 
 data = {}
 names = {}
+names_all = []
 # load regional data
 for region in regions:
     if region == 'naaaaaa':
@@ -73,9 +74,15 @@ for region in regions:
     else:
         data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_profiles.p'),'r'))
         names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_summoners.p'),'r'))
+    for n in names[region]:
+        names_all.append(n)
+
+data_all = np.concatenate([data[r] for r in regions])
+#names_all = np.concatenate([names[r] for r in regions])
 
 app = Flask(__name__, static_folder=os.path.join(my_dir, 'static'))
-app.config.from_object(__name__)
+#app.config.from_object(__name__)
+#app.config['PROPAGATE_EXCEPTIONS'] = True
 
 # trying different methods of doing the match
 match_modes = ['basic', 'weighted', 'weighted2', 'weighted3', 'top10', 'top1', 'complex', 'top5match','multiply']
@@ -92,24 +99,25 @@ def suggestions():
     #summoner_name = request.get_data()
     data = request.get_data()
 
-    summoner_name, region = data.split('&')
+    summoner_name, region, use_all = data.split('&')
 
     summoner_name = summoner_name[14:]
     region = region[7:]
+    use_all = use_all[8:] == 'true'
+
     region1, region2 = get_region_code(region)
 
     #TODO: add option to return results from regions other than your own
-    response = retrieve_data(summoner_name, region=region1, region2=region2)
+    response = retrieve_data(summoner_name, region=region1, region2=region2, use_all=use_all)
 
     return jsonify(response)
 
 
-def retrieve_data(sum_name, region='na', region2='na1'):
+def retrieve_data(sum_name, region='na', region2='na1', use_all=False):
 
     clean_sum_name = sum_name.replace(" ", "").lower()
 
-    #try:
-    if True:
+    try:
         # Get Summoner ID
         sum_id_query = "https://{0}.api.pvp.net/api/lol/{0}/v1.4/summoner/by-name/{1}?api_key={2}".format(region, clean_sum_name, api_key)
         
@@ -138,6 +146,14 @@ def retrieve_data(sum_name, region='na', region2='na1'):
             total_points += pts
 
         user_data[0,:] /= np.sum(user_data[0,:])
+
+        if use_all:
+            # Compare against summoners from all regions
+            sum_data = data_all#np.concatenate([data[r] for r in regions])
+            name_data = names_all#np.concatenate([names[r] for r in regions])
+        else:
+            sum_data = data[region]
+            name_data = names[region]
 
         # Do matching
         if match_mode == 'basic':
@@ -189,7 +205,7 @@ def retrieve_data(sum_name, region='na', region2='na1'):
             print(result.shape)
 
         elif match_mode == 'complex':
-            tmp_data = deepcopy(data[region])
+            tmp_data = deepcopy(sum_data)
             tmp_user = deepcopy(user_data)
             indices = np.argsort(tmp_user)
             tmp_user[indices[:-5]] = 0
@@ -198,21 +214,19 @@ def retrieve_data(sum_name, region='na', region2='na1'):
                 indices = np.argsort(tmp_data[i])
                 tmp_data[i][indices[:-5]] = 0
                 tmp_data[i] /= np.sum(tmp_data[i])
-            result = np.linalg.norm(tmp_data - tmp_user, axis=1)*.2 + np.linalg.norm(data[region] - user_data, axis=1)*.3 - np.linalg.norm(np.multiply(data[region], user_data), axis=1)
+            result = np.linalg.norm(tmp_data - tmp_user, axis=1)*.2 + np.linalg.norm(sum_data - user_data, axis=1)*.3 - np.linalg.norm(np.multiply(sum_data, user_data), axis=1)
 
         indices = np.argsort(result)
-        
+
         matches = []
         #names : id, name, league, region
         for i in indices[:5]:
-            matches.append([names[region][i]])
+            matches.append([name_data[i]])
 
         return {'summoner_name':sum_name,
                 'matches': matches,
                 'error':False}
-    #except:
-    if False:
-        #print ("Unexpected error:", sys.exc_info()[0])
+    except:
         return {'error':True}
 
 if __name__ == '__main__':

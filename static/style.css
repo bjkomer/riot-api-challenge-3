@@ -27,6 +27,8 @@ h2              { font-size: 1.2em; }
 .inputs {align:center;}
 
 .plain-text {color:#2363e8;text-align:center;}
+.radio-inline {color:#2363e8;}
+.match-region-label {color:#2363e8;display: inline-block;}
 /*
 .plain-text {color:#3333ff}
 */

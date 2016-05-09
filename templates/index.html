@@ -15,9 +15,9 @@
   <body style="background-color:#292929">
     <h1 style="color:#2363e8" class='text-center title'>Mastery Match</h1>
     <br>
-    <p class='plain-text'>Enter your summoner name:</p>
+    <p class='plain-text'>Enter your summoner name to find highly ranked players with similar mastery scores to your own</p>
     <div class='inputs col-md-10  col-md-offset-4' >
-      <div class="col-xs-2">
+      <div class="col-xs-3">
         <input type="text" class="form-control" id="summoner-name-input" />
       </div>
       <div class="btn-group">
@@ -37,14 +37,22 @@
         </ul>
       </div>
       <button class="btn btn-primary" onclick="get_suggestions()">Find Similar Summoners</button>
+      <div>
+        <p class='match-region-label'>Find matches in:</p>
+        <label class="radio-inline" id="cur"><input type="radio" name="regionradio">Current Region</label>
+        <label class="radio-inline" id="all"><input type="radio" name="regionradio">All Regions</label>
+      </div>
     </div>
+    <br>
     <br>
     <p class="hidden error-text plain-text">Summoner cannot be found for the specified region</p>
     <p class="hidden no-name-text plain-text">Please enter a summoner name!</p>
+    <br>
+    <br>
     <table class="table table-bordered table-hover hidden">
       <thead>
         <tr id="header">
-          <td class="sum-list-elem sum-name">Name</td>
+          <td class="sum-list-elem sum-name">Summoner Name</td>
           <td class="sum-list-elem sum-rank">League</td>
           <td class="sum-list-elem sum-region">Region</td>
         </tr>
@@ -96,9 +104,13 @@
         $.ajax({
             url: '/suggestions',
             type: 'POST',
+            timeout: 2500,
             dataType: 'text',
             data: {summoner_name: $('#summoner-name-input').val().replace(/\s/g,''),
-                   region: $('#region_dropdown').text()}
+                   region: $('#region_dropdown').text(),
+                   //use_all: $('input[name=regionradio]:checked').val()
+                   use_all: $("#all input[name=regionradio]").is(':checked')
+                  }
           })
           .done(function(json) {
             json_obj = JSON.parse(json)
@@ -126,7 +138,7 @@
                 $('#sum'+i.toString()+' .sum-rank').attr("alt", matches[i][0][2]);
                 $('#sum'+i.toString()+' .sum-rank').attr("src", "static/images/"+matches[i][0][2].toLowerCase()+"_tier.png");
                 $('#sum'+i.toString()+' .sum-region').text(matches[i][0][3].toUpperCase());
-                $('#sum'+i.toString()+' .sum-name').attr("href",'http://www.lolking.net/summoner/na/'+matches[i][0][0].toString());
+                $('#sum'+i.toString()+' .sum-name').attr("href",'http://www.lolking.net/summoner/'+matches[i][0][3]+'/'+matches[i][0][0].toString());
               }
             }
           })
