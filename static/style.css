@@ -17,12 +17,8 @@ h2              { font-size: 1.2em; }
                   border: 1px solid #aacbe2; }
 .error          { background: #f0d6d6; padding: 0.5em; }
 
-.sum-list-elem {display:inline;}
-.sum-list {list-style-type: none;}
-
-.sum-name {width:150px;display: inline-block; }
-.sum-rank {width:50px;display: inline-block; }
-.sum-region {width:50px;display: inline-block; text-align:center;}
+.sum-rank {width:50px;}
+.sum-region {width:50px;text-align:center;}
 
 .inputs {align:center;}
 
