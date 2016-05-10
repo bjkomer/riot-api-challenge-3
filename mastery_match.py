@@ -59,8 +59,6 @@ regions = ['br','eune','euw','jp','kr','lan','las','na','oce','ru','tr']
 diamond_regions = ['br','eune','euw','kr','lan','las','na','oce','ru','tr']
 
 api_key = open(os.path.join(my_dir, 'key.txt'),'r').read().rstrip()
-#data = pickle.load(open(os.path.join(my_dir, 'na_combined_profiles.p'),'r'))
-#names = pickle.load(open(os.path.join(my_dir, 'na_combined_summoners.p'), 'r'))
 champs = pickle.load(open(os.path.join(my_dir, 'ordered_champs.p'), 'r'))
 cid_to_index = pickle.load(open(os.path.join(my_dir, 'cid_mapping.p'),'r'))
 
@@ -73,12 +71,9 @@ names = {}
 names_diamond = {}
 names_all = []
 names_diamond_all = []
+
 # load regional data
 for region in regions:
-    #if region == 'naaaaaa':
-    #    data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_profiles.p'),'r'))
-    #    names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_combined_summoners.p'),'r'))
-    #else:
     data[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_profiles.p'),'r'))
     names[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_summoners.p'),'r'))
     data_diamond[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_profiles.p'),'r'))
@@ -87,6 +82,7 @@ for region in regions:
         names_all.append(n)
         names_diamond_all.append(n)
 
+# get specifically diamond players for a region
 for region in diamond_regions:
     data_diamond_only[region] = pickle.load(open(os.path.join(my_dir, 'data/'+region+'_diamond_profiles.p'),'r'))
     data_diamond[region] = np.concatenate([data[region],data_diamond_only[region]])
@@ -98,18 +94,18 @@ for region in diamond_regions:
 data_all = np.concatenate([data[r] for r in regions])
 data_diamond_all = np.concatenate([data_all, np.concatenate([data_diamond_only[r] for r in diamond_regions])])
 
-
-
-#names_all = np.concatenate([names[r] for r in regions])
-
 app = Flask(__name__, static_folder=os.path.join(my_dir, 'static'))
-#app.config.from_object(__name__)
+
+# Use for debugging
 #app.config['PROPAGATE_EXCEPTIONS'] = True
 
 # trying different methods of doing the match
 match_modes = ['basic', 'weighted', 'weighted2', 'weighted3', 'top10', 'top1', 'complex', 'top5match','multiply']
+
+# this one seems to get the best matches
 match_mode =  'complex'
 
+# hardcoded for now, but should be dynamic in the future with an API call
 NUM_CHAMPIONS = 130
 
 @app.route('/')
@@ -118,19 +114,22 @@ def startup():
 
 @app.route('/suggestions', methods=['POST'])
 def suggestions():
-    #summoner_name = request.get_data()
     data = request.get_data()
 
     summoner_name, region, use_all, diamond = data.split('&')
 
+    # remove extra text from in front of the actual values
     summoner_name = summoner_name[14:]
     region = region[7:]
+
+    # convert string 'true' to boolean True
     use_all = use_all[8:] == 'true'
     diamond = diamond[8:] == 'true'
 
+    # mastery API has slightly different region codes in parts of the API call
     region1, region2 = get_region_code(region)
 
-    #TODO: add option to return results from regions other than your own
+    # get the match results
     response = retrieve_data(summoner_name, region=region1, region2=region2, use_all=use_all, diamond=diamond)
 
     return jsonify(response)
@@ -138,6 +137,7 @@ def suggestions():
 
 def retrieve_data(sum_name, region='na', region2='na1', use_all=False, diamond=False):
 
+    # API call shouldn't have spaces
     clean_sum_name = sum_name.replace(" ", "").lower()
 
     try:
@@ -157,6 +157,7 @@ def retrieve_data(sum_name, region='na', region2='na1', use_all=False, diamond=F
 
         user_data = np.zeros((1,NUM_CHAMPIONS))
 
+        # Compute mastery profile
         total_points = 0
         for champ in j:
             cid = champ['championId']
@@ -170,15 +171,17 @@ def retrieve_data(sum_name, region='na', region2='na1', use_all=False, diamond=F
 
         user_data[0,:] /= np.sum(user_data[0,:])
 
+        # Load the correct dataset to use
         if use_all:
             # Compare against summoners from all regions
             if diamond:
                 sum_data = data_diamond_all
                 name_data = names_diamond_all
             else:
-                sum_data = data_all#np.concatenate([data[r] for r in regions])
-                name_data = names_all#np.concatenate([names[r] for r in regions])
+                sum_data = data_all
+                name_data = names_all
         else:
+            # Only use the selected region
             if diamond:
                 sum_data = data_diamond[region]
                 name_data = names_diamond[region]
@@ -258,6 +261,7 @@ def retrieve_data(sum_name, region='na', region2='na1', use_all=False, diamond=F
                 'matches': matches,
                 'error':False}
     except:
+        # Let javascript know it should display an error message
         return {'error':True}
 
 if __name__ == '__main__':
